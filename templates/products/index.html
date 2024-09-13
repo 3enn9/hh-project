@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product API</title>
+</head>
+<body>
+    <h1>Product List</h1>
+
+    <form id="product-form">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required></textarea><br>
+        <label for="price">Price:</label>
+        <input type="number" id="price" name="price" step="0.01" required><br>
+        <button type="submit">Submit</button>
+    </form>
+
+    <h2>Products</h2>
+    <table id="product-table" border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        document.getElementById('product-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const data = {
+                name: formData.get('name'),
+                description: formData.get('description'),
+                price: parseFloat(formData.get('price'))
+            };
+
+            fetch('/api/products/create/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(() => {
+                loadProducts();
+            });
+        });
+
+        function loadProducts() {
+            fetch('/api/products/')
+                .then(response => response.json())
+                .then(products => {
+                    const tbody = document.querySelector('#product-table tbody');
+                    tbody.innerHTML = '';
+                    products.forEach(product => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${product.id}</td>
+                            <td>${product.name}</td>
+                            <td>${product.description}</td>
+                            <td>${product.price}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                });
+        }
+
+        // Load products on page load
+        loadProducts();
+    </script>
+</body>
+</html>
